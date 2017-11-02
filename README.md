@@ -51,7 +51,11 @@ softonic/kubencrypt \
 ##### In-cluster examples
 
 ```none
-kubectl --namespace foo \
+kubectl --namespace my-namespace \
 run kubencrypt --restart Never \
---image softonic/kubencrypt
+--image softonic/kubencrypt \
+--image-pull-policy Always -- \
+--namespace my-namespace \
+--ingress my-ingress \
+--secret my-secret
 ```
