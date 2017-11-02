@@ -30,14 +30,22 @@ eval "$(kubencrypt --completion-script-${0#-})"
 ##### Out-of-cluster examples
 
 ```none
-kubencrypt
+kubencrypt \
+--namespace my-namespace \
+--ingress my-ingress \
+--secret my-secret
 ```
+
+Same thing with docker:
 
 ```none
 docker run -it --rm \
 -v ~/.kube/config:/root/.kube/config \
 -v ~/.config/gcloud:/root/.config/gcloud \
-softonic/kubencrypt
+softonic/kubencrypt \
+--namespace my-namespace \
+--ingress my-ingress \
+--secret my-secret
 ```
 
 ##### In-cluster examples

@@ -94,7 +94,7 @@ func main() {
 		log.Panic(err.Error())
 	}
 
-	// Log pods and ingresses count:
+	// Log ingresses and secrets count:
 	log.WithField("count", len(ingresses.Items)).Info("There are some ingresses in the cluster")
 	log.WithField("count", len(secrets.Items)).Info("There are some secrets in the cluster")
 }
