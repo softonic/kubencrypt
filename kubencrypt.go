@@ -37,8 +37,16 @@ var (
 		Default(kubeconfigPath()).ExistingFileOrDir()
 
 	flgNamespace = app.Flag("namespace",
-		"Set the namespace to be watched.").
+		"If present, the namespace scope for this request.").
 		Default(apiv1.NamespaceAll).HintAction(listNamespaces).String()
+
+	flgIngress = app.Flag("ingress",
+		"Name of the ingress object to be altered.").
+		Required().HintAction(listIngresses).String()
+
+	flgSecret = app.Flag("secret",
+		"Name of the secret object to be altered.").
+		Required().HintAction(listSecrets).String()
 )
 
 //-----------------------------------------------------------------------------
@@ -80,12 +88,6 @@ func main() {
 		log.Panic(err.Error())
 	}
 
-	// Get all the pods:
-	pods, err := clientset.CoreV1().Pods(*flgNamespace).List(metav1.ListOptions{})
-	if err != nil {
-		log.Panic(err.Error())
-	}
-
 	// Get all the ingresses:
 	ingresses, err := clientset.ExtensionsV1beta1().Ingresses(*flgNamespace).List(metav1.ListOptions{})
 	if err != nil {
@@ -99,7 +101,6 @@ func main() {
 	}
 
 	// Log pods and ingresses count:
-	log.WithField("count", len(pods.Items)).Info("There are some pods in the cluster")
 	log.WithField("count", len(ingresses.Items)).Info("There are some ingresses in the cluster")
 	log.WithField("count", len(secrets.Items)).Info("There are some secrets in the cluster")
 }
@@ -127,7 +128,6 @@ func buildConfig(kubeconfig string) (*rest.Config, error) {
 
 	// Use kubeconfig if given...
 	if kubeconfig != "" && kubeconfig != "." {
-		log.WithField("file", kubeconfig).Info("Running out-of-cluster using kubeconfig")
 		return clientcmd.BuildConfigFromFlags("", kubeconfig)
 	}
 
@@ -156,6 +156,70 @@ func listNamespaces() (list []string) {
 
 	// Get the list of namespace objects:
 	l, err := clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Extract the name of each namespace:
+	for _, v := range l.Items {
+		list = append(list, v.Name)
+	}
+
+	return
+}
+
+//-----------------------------------------------------------------------------
+// listIngresses:
+//-----------------------------------------------------------------------------
+
+func listIngresses() (list []string) {
+
+	// Build the config:
+	config, err := buildConfig(*flgKubeconfig)
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Create the clientset:
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Get the list of ingresses objects:
+	l, err := clientset.ExtensionsV1beta1().Ingresses(*flgNamespace).List(metav1.ListOptions{})
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Extract the name of each namespace:
+	for _, v := range l.Items {
+		list = append(list, v.Name)
+	}
+
+	return
+}
+
+//-----------------------------------------------------------------------------
+// listSecrets:
+//-----------------------------------------------------------------------------
+
+func listSecrets() (list []string) {
+
+	// Build the config:
+	config, err := buildConfig(*flgKubeconfig)
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Create the clientset:
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Get the list of secrets objects:
+	l, err := clientset.CoreV1().Secrets(*flgNamespace).List(metav1.ListOptions{})
 	if err != nil {
 		log.Panic(err.Error())
 	}
