@@ -43,5 +43,7 @@ softonic/kubencrypt
 ##### In-cluster examples
 
 ```none
-kubectl --namespace monitoring run kubencrypt --image softonic/kubencrypt
+kubectl --namespace foo \
+run kubencrypt --restart Never \
+--image softonic/kubencrypt
 ```
