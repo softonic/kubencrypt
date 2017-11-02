@@ -1,0 +1,12 @@
+sudo: false
+
+language: go
+
+go:
+  - 1.9
+
+install:
+  - go get github.com/softonic/kubencrypt
+
+script:
+  - true
