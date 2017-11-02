@@ -10,6 +10,7 @@ import (
 	"os"
 
 	// Kubernetes:
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -34,6 +35,10 @@ var (
 	flgKubeconfig = app.Flag("kubeconfig",
 		"Absolute path to the kubeconfig file.").
 		Default(kubeconfigPath()).ExistingFileOrDir()
+
+	flgNamespace = app.Flag("namespace",
+		"Set the namespace to be watched.").
+		Default(apiv1.NamespaceAll).HintAction(listNamespaces).String()
 )
 
 //-----------------------------------------------------------------------------
@@ -76,19 +81,19 @@ func main() {
 	}
 
 	// Get all the pods:
-	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
+	pods, err := clientset.CoreV1().Pods(*flgNamespace).List(metav1.ListOptions{})
 	if err != nil {
 		log.Panic(err.Error())
 	}
 
 	// Get all the ingresses:
-	ingresses, err := clientset.ExtensionsV1beta1().Ingresses("").List(metav1.ListOptions{})
+	ingresses, err := clientset.ExtensionsV1beta1().Ingresses(*flgNamespace).List(metav1.ListOptions{})
 	if err != nil {
 		log.Panic(err.Error())
 	}
 
 	// Get all the secrets:
-	secrets, err := clientset.CoreV1().Secrets("").List(metav1.ListOptions{})
+	secrets, err := clientset.CoreV1().Secrets(*flgNamespace).List(metav1.ListOptions{})
 	if err != nil {
 		log.Panic(err.Error())
 	}
@@ -129,4 +134,36 @@ func buildConfig(kubeconfig string) (*rest.Config, error) {
 	// ...otherwise assume in-cluster:
 	log.Info("Running in-cluster using environment variables")
 	return rest.InClusterConfig()
+}
+
+//-----------------------------------------------------------------------------
+// listNamespaces:
+//-----------------------------------------------------------------------------
+
+func listNamespaces() (list []string) {
+
+	// Build the config:
+	config, err := buildConfig(*flgKubeconfig)
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Create the clientset:
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Get the list of namespace objects:
+	l, err := clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Extract the name of each namespace:
+	for _, v := range l.Items {
+		list = append(list, v.Name)
+	}
+
+	return
 }
