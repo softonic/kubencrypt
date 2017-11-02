@@ -82,21 +82,21 @@ func main() {
 		log.Panic(err.Error())
 	}
 
-	// Get all the ingresses:
-	ingresses, err := clientset.ExtensionsV1beta1().Ingresses(*flgNamespace).List(metav1.ListOptions{})
+	// Get my ingress:
+	myIngress, err := clientset.ExtensionsV1beta1().Ingresses(*flgNamespace).Get(*flgIngress, metav1.GetOptions{})
 	if err != nil {
 		log.Panic(err.Error())
 	}
 
-	// Get all the secrets:
-	secrets, err := clientset.CoreV1().Secrets(*flgNamespace).List(metav1.ListOptions{})
+	// Get my secret:
+	mySecret, err := clientset.CoreV1().Secrets(*flgNamespace).Get(*flgSecret, metav1.GetOptions{})
 	if err != nil {
 		log.Panic(err.Error())
 	}
 
 	// Log ingresses and secrets count:
-	log.WithField("count", len(ingresses.Items)).Info("There are some ingresses in the cluster")
-	log.WithField("count", len(secrets.Items)).Info("There are some secrets in the cluster")
+	log.WithField("name", myIngress.GetObjectMeta().GetName()).Info("My ingress")
+	log.WithField("name", mySecret.GetObjectMeta().GetName()).Info("My secret")
 }
 
 //-----------------------------------------------------------------------------
