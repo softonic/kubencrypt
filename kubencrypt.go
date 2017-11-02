@@ -76,14 +76,8 @@ func main() {
 	// Parse the command-line flags:
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
-	// Build the k8s config:
-	config, err := buildConfig(*flgKubeconfig)
-	if err != nil {
-		log.Panic(err.Error())
-	}
-
-	// Create the k8s clientset:
-	clientset, err := kubernetes.NewForConfig(config)
+	// Connect to the cluster:
+	clientset, err := k8sConnect()
 	if err != nil {
 		log.Panic(err.Error())
 	}
@@ -121,6 +115,28 @@ func kubeconfigPath() (path string) {
 }
 
 //-----------------------------------------------------------------------------
+// k8sConnect:
+//-----------------------------------------------------------------------------
+
+func k8sConnect() (*kubernetes.Clientset, error) {
+
+	// Build the config:
+	config, err := buildConfig(*flgKubeconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the clientset:
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the clientset:
+	return clientset, nil
+}
+
+//-----------------------------------------------------------------------------
 // buildConfig:
 //-----------------------------------------------------------------------------
 
@@ -142,14 +158,8 @@ func buildConfig(kubeconfig string) (*rest.Config, error) {
 
 func listNamespaces() (list []string) {
 
-	// Build the config:
-	config, err := buildConfig(*flgKubeconfig)
-	if err != nil {
-		log.Panic(err.Error())
-	}
-
-	// Create the clientset:
-	clientset, err := kubernetes.NewForConfig(config)
+	// Connect to the cluster:
+	clientset, err := k8sConnect()
 	if err != nil {
 		log.Panic(err.Error())
 	}
@@ -174,14 +184,8 @@ func listNamespaces() (list []string) {
 
 func listIngresses() (list []string) {
 
-	// Build the config:
-	config, err := buildConfig(*flgKubeconfig)
-	if err != nil {
-		log.Panic(err.Error())
-	}
-
-	// Create the clientset:
-	clientset, err := kubernetes.NewForConfig(config)
+	// Connect to the cluster:
+	clientset, err := k8sConnect()
 	if err != nil {
 		log.Panic(err.Error())
 	}
@@ -192,7 +196,7 @@ func listIngresses() (list []string) {
 		log.Panic(err.Error())
 	}
 
-	// Extract the name of each namespace:
+	// Extract the name of each ingress:
 	for _, v := range l.Items {
 		list = append(list, v.Name)
 	}
@@ -206,14 +210,8 @@ func listIngresses() (list []string) {
 
 func listSecrets() (list []string) {
 
-	// Build the config:
-	config, err := buildConfig(*flgKubeconfig)
-	if err != nil {
-		log.Panic(err.Error())
-	}
-
-	// Create the clientset:
-	clientset, err := kubernetes.NewForConfig(config)
+	// Connect to the cluster:
+	clientset, err := k8sConnect()
 	if err != nil {
 		log.Panic(err.Error())
 	}
@@ -224,7 +222,7 @@ func listSecrets() (list []string) {
 		log.Panic(err.Error())
 	}
 
-	// Extract the name of each namespace:
+	// Extract the name of each secret:
 	for _, v := range l.Items {
 		list = append(list, v.Name)
 	}
