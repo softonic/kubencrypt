@@ -60,7 +60,7 @@ func init() {
 
 func main() {
 
-	// Parse command flags:
+	// Parse the command-line flags:
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	// Build the k8s config:
@@ -75,14 +75,28 @@ func main() {
 		log.Panic(err.Error())
 	}
 
-	// Get the pods:
+	// Get all the pods:
 	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Panic(err.Error())
 	}
 
-	// Log pods count:
-	log.WithField("count", len(pods.Items)).Info("There are many pods in the cluster")
+	// Get all the ingresses:
+	ingresses, err := clientset.ExtensionsV1beta1().Ingresses("").List(metav1.ListOptions{})
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Get all the secrets:
+	secrets, err := clientset.CoreV1().Secrets("").List(metav1.ListOptions{})
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	// Log pods and ingresses count:
+	log.WithField("count", len(pods.Items)).Info("There are some pods in the cluster")
+	log.WithField("count", len(ingresses.Items)).Info("There are some ingresses in the cluster")
+	log.WithField("count", len(secrets.Items)).Info("There are some secrets in the cluster")
 }
 
 //-----------------------------------------------------------------------------
@@ -108,8 +122,6 @@ func buildConfig(kubeconfig string) (*rest.Config, error) {
 
 	// Use kubeconfig if given...
 	if kubeconfig != "" && kubeconfig != "." {
-
-		// Log and return:
 		log.WithField("file", kubeconfig).Info("Running out-of-cluster using kubeconfig")
 		return clientcmd.BuildConfigFromFlags("", kubeconfig)
 	}
