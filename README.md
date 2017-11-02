@@ -23,6 +23,25 @@ go get -u github.com/softonic/kubencrypt
 
 ##### Shell completion
 
-```bash
+```none
 eval "$(kubencrypt --completion-script-${0#-})"
+```
+
+##### Out-of-cluster examples
+
+```none
+kubencrypt
+```
+
+```none
+docker run -it --rm \
+-v ~/.kube/config:/root/.kube/config \
+-v ~/.config/gcloud:/root/.config/gcloud \
+softonic/kubencrypt
+```
+
+##### In-cluster examples
+
+```none
+kubectl --namespace monitoring run kubencrypt --image softonic/kubencrypt
 ```
