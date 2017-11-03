@@ -47,6 +47,14 @@ var (
 	flgSecret = app.Flag("secret",
 		"Name of the secret object to be altered.").
 		Required().HintAction(listSecrets).String()
+
+	flgServiceName = app.Flag("service-name",
+		"Name of the k8s letsencrypt service.").
+		Required().String()
+
+	flgServicePort = app.Flag("service-port",
+		"Port of the k8s letsencrypt service.").
+		Required().String()
 )
 
 //-----------------------------------------------------------------------------
@@ -87,6 +95,18 @@ func main() {
 	if err != nil {
 		log.Panic(err.Error())
 	}
+
+	// Alter my ingress (add a path):
+	// path := &extensionsV1beta1.HTTPIngressPath{
+	//	Path: "/.well-known/*"
+	//	Backend: extensionsV1beta1.IngressBackend{
+	//		ServiceName: *flgServiceName,
+	//		ServicePort: *flgServicePort,
+	//	},
+	//}
+
+	log.Info(myIngress.Spec.Rules[0].HTTP.Paths[0].Path)
+	log.Info(myIngress.Spec.Rules[0].HTTP.Paths[1].Path)
 
 	// Get my secret:
 	mySecret, err := clientset.CoreV1().Secrets(*flgNamespace).Get(*flgSecret, metav1.GetOptions{})
