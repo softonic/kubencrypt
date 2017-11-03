@@ -100,11 +100,11 @@ func main() {
 		log.Panic(err.Error())
 	}
 
-	// Make a backup:
-	bkpIngress := *myIngress
+	// Backup the first rule paths:
+	paths := &myIngress.Spec.Rules[0].HTTP.Paths
+	pathsBackup := *paths
 
 	// Add a path to the first rule:
-	paths := &myIngress.Spec.Rules[0].HTTP.Paths
 	*paths = append(*paths, extensionsv1beta1.HTTPIngressPath{
 		Path: "/.well-known/*",
 		Backend: extensionsv1beta1.IngressBackend{
@@ -116,14 +116,22 @@ func main() {
 		},
 	})
 
-	if _, err := ingressClient.Update(myIngress); err != nil {
+	if _, err = ingressClient.Update(myIngress); err != nil {
 		log.Panic(err)
 	}
 
-	time.Sleep(time.Second * 20)
+	// Restore the backup:
+	time.Sleep(time.Second * 10)
+	myIngress, err = ingressClient.Get(*flgIngress, metav1.GetOptions{})
+	if err != nil {
+		log.Panic(err.Error())
+	}
 
-	if _, err := ingressClient.Update(&bkpIngress); err != nil {
-		log.Panic(err)
+	paths = &myIngress.Spec.Rules[0].HTTP.Paths
+	*paths = pathsBackup
+
+	if _, err := ingressClient.Update(myIngress); err != nil {
+		log.Panic(err.Error())
 	}
 
 	// Get my secret:
