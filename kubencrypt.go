@@ -13,6 +13,7 @@ import (
 	// Kubernetes:
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -100,11 +101,11 @@ func main() {
 		log.Panic(err.Error())
 	}
 
-	// Backup the first rule paths:
-	paths := &myIngress.Spec.Rules[0].HTTP.Paths
-	pathsBackup := *paths
+	// Backup the ingress:
+	myBackup := myIngress.DeepCopy()
 
 	// Add a path to the first rule:
+	paths := &myIngress.Spec.Rules[0].HTTP.Paths
 	*paths = append(*paths, extensionsv1beta1.HTTPIngressPath{
 		Path: "/.well-known/*",
 		Backend: extensionsv1beta1.IngressBackend{
@@ -122,16 +123,22 @@ func main() {
 
 	// Restore the backup:
 	time.Sleep(time.Second * 10)
-	myIngress, err = ingressClient.Get(*flgIngress, metav1.GetOptions{})
-	if err != nil {
-		log.Panic(err.Error())
-	}
 
-	paths = &myIngress.Spec.Rules[0].HTTP.Paths
-	*paths = pathsBackup
+	for {
 
-	if _, err := ingressClient.Update(myIngress); err != nil {
-		log.Panic(err.Error())
+		myIngress.Spec.Rules[0].HTTP.Paths = myBackup.Spec.Rules[0].HTTP.Paths
+
+		if _, err = ingressClient.Update(myIngress); errors.IsConflict(err) {
+			log.Warn("Encountered conflict, retrying")
+			myIngress, err = ingressClient.Get(*flgIngress, metav1.GetOptions{})
+			if err != nil {
+				log.Panic(err.Error())
+			}
+		} else if err != nil {
+			log.Panic(err.Error())
+		} else {
+			break
+		}
 	}
 
 	// Get my secret:
