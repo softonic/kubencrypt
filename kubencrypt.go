@@ -8,6 +8,7 @@ import (
 
 	// Stdlib:
 	"os"
+	"time"
 
 	// Kubernetes:
 	apiv1 "k8s.io/api/core/v1"
@@ -93,13 +94,18 @@ func main() {
 	}
 
 	// Get my ingress:
-	myIngress, err := clientset.ExtensionsV1beta1().Ingresses(*flgNamespace).Get(*flgIngress, metav1.GetOptions{})
+	ingressClient := clientset.ExtensionsV1beta1().Ingresses(*flgNamespace)
+	myIngress, err := ingressClient.Get(*flgIngress, metav1.GetOptions{})
 	if err != nil {
 		log.Panic(err.Error())
 	}
 
-	// Alter my ingress (add a path):
-	path := &extensionsv1beta1.HTTPIngressPath{
+	// Make a backup:
+	bkpIngress := *myIngress
+
+	// Add a path to the first rule:
+	paths := &myIngress.Spec.Rules[0].HTTP.Paths
+	*paths = append(*paths, extensionsv1beta1.HTTPIngressPath{
 		Path: "/.well-known/*",
 		Backend: extensionsv1beta1.IngressBackend{
 			ServiceName: *flgServiceName,
@@ -108,11 +114,17 @@ func main() {
 				IntVal: int32(*flgServicePort),
 			},
 		},
+	})
+
+	if _, err := ingressClient.Update(myIngress); err != nil {
+		log.Panic(err)
 	}
 
-	log.Info(path.Path)
-	log.Info(myIngress.Spec.Rules[0].HTTP.Paths[0].Path)
-	log.Info(myIngress.Spec.Rules[0].HTTP.Paths[1].Path)
+	time.Sleep(time.Second * 20)
+
+	if _, err := ingressClient.Update(&bkpIngress); err != nil {
+		log.Panic(err)
+	}
 
 	// Get my secret:
 	mySecret, err := clientset.CoreV1().Secrets(*flgNamespace).Get(*flgSecret, metav1.GetOptions{})
