@@ -11,7 +11,9 @@ import (
 
 	// Kubernetes:
 	apiv1 "k8s.io/api/core/v1"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/client-go/rest"
@@ -54,7 +56,7 @@ var (
 
 	flgServicePort = app.Flag("service-port",
 		"Port of the k8s letsencrypt service.").
-		Required().String()
+		Required().Int()
 )
 
 //-----------------------------------------------------------------------------
@@ -97,14 +99,18 @@ func main() {
 	}
 
 	// Alter my ingress (add a path):
-	// path := &extensionsV1beta1.HTTPIngressPath{
-	//	Path: "/.well-known/*"
-	//	Backend: extensionsV1beta1.IngressBackend{
-	//		ServiceName: *flgServiceName,
-	//		ServicePort: *flgServicePort,
-	//	},
-	//}
+	path := &extensionsv1beta1.HTTPIngressPath{
+		Path: "/.well-known/*",
+		Backend: extensionsv1beta1.IngressBackend{
+			ServiceName: *flgServiceName,
+			ServicePort: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: int32(*flgServicePort),
+			},
+		},
+	}
 
+	log.Info(path.Path)
 	log.Info(myIngress.Spec.Rules[0].HTTP.Paths[0].Path)
 	log.Info(myIngress.Spec.Rules[0].HTTP.Paths[1].Path)
 
