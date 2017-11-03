@@ -117,7 +117,7 @@ func main() {
 		},
 	})
 
-	if _, err = ingressClient.Update(myIngress); err != nil {
+	if myIngress, err = ingressClient.Update(myIngress); err != nil {
 		log.Panic(err)
 	}
 
