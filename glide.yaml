@@ -1,0 +1,8 @@
+package: github.com/softonic/kubencrypt
+import:
+- package: k8s.io/client-go
+  version: v4.0.0
+- package: github.com/alecthomas/kingpin
+  version: v2.2.5
+- package: github.com/Sirupsen/logrus
+  version: v1.0.3
