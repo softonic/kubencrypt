@@ -23,6 +23,7 @@ import (
 
 	// Community:
 	log "github.com/Sirupsen/logrus"
+	"github.com/softonic/kubencrypt/pkg/proxy"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -88,6 +89,9 @@ func main() {
 	// Parse the command-line flags:
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
+	// Start the proxy:
+	go proxy.Start()
+
 	// Connect to the cluster:
 	clientset, err := k8sConnect()
 	if err != nil {
@@ -104,7 +108,7 @@ func main() {
 	// Backup the ingress:
 	myBackup := myIngress.DeepCopy()
 
-	// Add a path to the first rule:
+	// Insert a path into the first rule:
 	paths := &myIngress.Spec.Rules[0].HTTP.Paths
 	*paths = append(*paths, extensionsv1beta1.HTTPIngressPath{
 		Path: "/.well-known/*",
