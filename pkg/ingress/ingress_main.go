@@ -16,7 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	types "k8s.io/client-go/kubernetes/typed/extensions/v1beta1"
-
 	//_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	// Community:
@@ -44,24 +43,37 @@ type Data struct {
 }
 
 //-----------------------------------------------------------------------------
-// func: Backup
+// func: connect
 //-----------------------------------------------------------------------------
 
-// Backup retrieves the current ingress object and makes a copy.
-func (d *Data) Backup() {
-
-	var err error
+func (d *Data) connect() (err error) {
 
 	if d.clientset == nil {
 
 		// Connect to the cluster:
 		d.clientset, err = cli.K8sConnect()
 		if err != nil {
-			log.Panic(err.Error())
+			return err
 		}
 
 		// Ingress client handler:
 		d.client = d.clientset.ExtensionsV1beta1().Ingresses(d.Namespace)
+	}
+
+	return nil
+}
+
+//-----------------------------------------------------------------------------
+// func: Backup
+//-----------------------------------------------------------------------------
+
+// Backup retrieves the current ingress object and makes a copy.
+func (d *Data) Backup() {
+
+	// Connect:
+	err := d.connect()
+	if err != nil {
+		log.Panic(err.Error())
 	}
 
 	// Get my ingress:
@@ -81,18 +93,10 @@ func (d *Data) Backup() {
 // Update adds a path into the first ingress rule.
 func (d *Data) Update() {
 
-	var err error
-
-	if d.clientset == nil {
-
-		// Connect to the cluster:
-		d.clientset, err = cli.K8sConnect()
-		if err != nil {
-			log.Panic(err.Error())
-		}
-
-		// Ingress client handler:
-		d.client = d.clientset.ExtensionsV1beta1().Ingresses(d.Namespace)
+	// Connect:
+	err := d.connect()
+	if err != nil {
+		log.Panic(err.Error())
 	}
 
 	// Forge the new data:
@@ -121,18 +125,10 @@ func (d *Data) Update() {
 // Restore restores the original ingress object.
 func (d *Data) Restore() {
 
-	var err error
-
-	if d.clientset == nil {
-
-		// Connect to the cluster:
-		d.clientset, err = cli.K8sConnect()
-		if err != nil {
-			log.Panic(err.Error())
-		}
-
-		// Ingress client handler:
-		d.client = d.clientset.ExtensionsV1beta1().Ingresses(d.Namespace)
+	// Connect:
+	err := d.connect()
+	if err != nil {
+		log.Panic(err.Error())
 	}
 
 	for {
