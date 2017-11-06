@@ -53,6 +53,7 @@ func (d *Data) connect() (err error) {
 
 	if d.clientset == nil {
 
+		// Log:
 		log.Info("Connecting to kubernetes...")
 
 		// Connect to the cluster:
@@ -81,6 +82,7 @@ func (d *Data) Backup() {
 		log.Panic(err.Error())
 	}
 
+	// Log:
 	log.Info("Backing up the current ingress...")
 
 	// Get my ingress:
@@ -106,6 +108,7 @@ func (d *Data) Update() {
 		log.Panic(err.Error())
 	}
 
+	// Log:
 	log.Info("Adding the letsencrypt path...")
 
 	// Forge the new data:
@@ -140,12 +143,15 @@ func (d *Data) Restore() {
 		log.Panic(err.Error())
 	}
 
+	// Log:
 	log.Info("Restoring the original ingress...")
 
+	// Modify loop:
 	for {
 
 		d.ingress.Spec.Rules[0].HTTP.Paths = d.backup.Spec.Rules[0].HTTP.Paths
 
+		// Retry Update() until you no longer get a conflict error:
 		if _, err = d.client.Update(d.ingress); errors.IsConflict(err) {
 			log.Warn("Encountered conflict, retrying")
 			d.ingress, err = d.client.Get(d.IngressName, metav1.GetOptions{})

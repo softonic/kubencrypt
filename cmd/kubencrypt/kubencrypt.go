@@ -8,7 +8,6 @@ import (
 
 	// Stdlib:
 	"os"
-	"time"
 
 	// Kubencrypt:
 	"github.com/softonic/kubencrypt/pkg/cli"
@@ -43,7 +42,12 @@ func main() {
 	// Parse the command-line flags:
 	kingpin.MustParse(cli.App.Parse(os.Args[1:]))
 
-	// Variables:
+	// Init proxy data:
+	myProxy := &proxy.Data{
+		ServicePort: *cli.FlgServicePort,
+	}
+
+	// Init ingress data:
 	myIngress := &ingress.Data{
 		Namespace:   *cli.FlgNamespace,
 		IngressName: *cli.FlgIngress,
@@ -52,7 +56,7 @@ func main() {
 	}
 
 	// Start the proxy:
-	go proxy.Start()
+	go myProxy.Start()
 
 	// Update the ingress:
 	go func() {
@@ -61,7 +65,11 @@ func main() {
 	}()
 
 	// Reachability loop:
-	time.Sleep(time.Second * 10)
+	for {
+		if myProxy.Reachable() {
+			break
+		}
+	}
 
 	// Restore the ingress:
 	myIngress.Restore()
