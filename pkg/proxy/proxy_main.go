@@ -33,7 +33,7 @@ func Start() {
 	http.HandleFunc("/", return200)
 
 	// Start the web server:
-	log.Info("Starting the web server...")
+	log.Info("Starting the proxy server...")
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal(err)

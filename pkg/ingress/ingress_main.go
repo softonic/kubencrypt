@@ -53,6 +53,8 @@ func (d *Data) connect() (err error) {
 
 	if d.clientset == nil {
 
+		log.Info("Connecting to kubernetes...")
+
 		// Connect to the cluster:
 		d.clientset, err = cli.K8sConnect()
 		if err != nil {
@@ -79,6 +81,8 @@ func (d *Data) Backup() {
 		log.Panic(err.Error())
 	}
 
+	log.Info("Backing up the current ingress...")
+
 	// Get my ingress:
 	d.ingress, err = d.client.Get(d.IngressName, metav1.GetOptions{})
 	if err != nil {
@@ -101,6 +105,8 @@ func (d *Data) Update() {
 	if err != nil {
 		log.Panic(err.Error())
 	}
+
+	log.Info("Adding the letsencrypt path...")
 
 	// Forge the new data:
 	d.paths = &d.ingress.Spec.Rules[0].HTTP.Paths
@@ -133,6 +139,8 @@ func (d *Data) Restore() {
 	if err != nil {
 		log.Panic(err.Error())
 	}
+
+	log.Info("Restoring the original ingress...")
 
 	for {
 

@@ -51,12 +51,18 @@ func main() {
 		ServicePort: *cli.FlgServicePort,
 	}
 
-	// Do the foo:
+	// Start the proxy:
 	go proxy.Start()
-	myIngress.Backup()
-	myIngress.Update()
 
-	// Restore the backup:
+	// Update the ingress:
+	go func() {
+		myIngress.Backup()
+		myIngress.Update()
+	}()
+
+	// Reachability loop:
 	time.Sleep(time.Second * 10)
+
+	// Restore the ingress:
 	myIngress.Restore()
 }
