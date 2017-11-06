@@ -35,11 +35,14 @@ type Data struct {
 	ServiceName string
 	ServicePort int
 
-	// Data:
+	// Handlers:
 	clientset *kubernetes.Clientset
 	client    types.IngressInterface
-	ingress   *extensionsv1beta1.Ingress
-	backup    *extensionsv1beta1.Ingress
+	paths     *[]extensionsv1beta1.HTTPIngressPath
+
+	// Data:
+	ingress *extensionsv1beta1.Ingress
+	backup  *extensionsv1beta1.Ingress
 }
 
 //-----------------------------------------------------------------------------
@@ -100,8 +103,8 @@ func (d *Data) Update() {
 	}
 
 	// Forge the new data:
-	paths := &d.ingress.Spec.Rules[0].HTTP.Paths
-	*paths = append(*paths, extensionsv1beta1.HTTPIngressPath{
+	d.paths = &d.ingress.Spec.Rules[0].HTTP.Paths
+	*d.paths = append(*d.paths, extensionsv1beta1.HTTPIngressPath{
 		Path: "/.well-known/*",
 		Backend: extensionsv1beta1.IngressBackend{
 			ServiceName: d.ServiceName,
