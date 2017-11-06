@@ -6,7 +6,7 @@ go:
   - 1.9
 
 install:
-  - go get github.com/softonic/kubencrypt
+  - go get github.com/softonic/kubencrypt/cmd/kubencrypt
 
 script:
   - true

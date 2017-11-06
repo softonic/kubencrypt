@@ -18,7 +18,7 @@ Easy letsencrypt on kubernetes.
 ##### Install
 
 ```bash
-go get -u github.com/softonic/kubencrypt
+go get -u github.com/softonic/kubencrypt/cmd/kubencrypt
 ```
 
 ##### Shell completion
