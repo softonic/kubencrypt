@@ -13,7 +13,7 @@
 [DockerHub]: https://hub.docker.com/r/softonic/kubencrypt
 [DockerHub Widget]: https://img.shields.io/docker/pulls/softonic/kubencrypt.svg
 
-Letsencrypt on kubernetes.
+Easy letsencrypt on kubernetes.
 
 ##### Install
 
@@ -33,7 +33,9 @@ eval "$(kubencrypt --completion-script-${0#-})"
 kubencrypt \
 --namespace my-namespace \
 --ingress my-ingress \
---secret my-secret
+--secret my-secret \
+--service-name my-service \
+--service-port my-port
 ```
 
 Same thing with docker:
@@ -45,7 +47,9 @@ docker run -it --rm \
 softonic/kubencrypt \
 --namespace my-namespace \
 --ingress my-ingress \
---secret my-secret
+--secret my-secret \
+--service-name my-service \
+--service-port my-port
 ```
 
 ##### In-cluster examples
@@ -57,5 +61,7 @@ run kubencrypt --restart Never \
 --image-pull-policy Always -- \
 --namespace my-namespace \
 --ingress my-ingress \
---secret my-secret
+--secret my-secret \
+--service-name my-service \
+--service-port my-port
 ```
