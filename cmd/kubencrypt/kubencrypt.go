@@ -66,11 +66,7 @@ func main() {
 	}()
 
 	// Reachability loop:
-	for {
-		if myProxy.Reachable() {
-			break
-		}
-	}
+	myProxy.Reachable()
 
 	// Restore the ingress:
 	myIngress.Restore()

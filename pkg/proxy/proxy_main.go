@@ -74,12 +74,13 @@ func (d *Data) Reachable() bool {
 		// Send an HTTP/GET request:
 		resp, err := netClient.Get("http://" + d.Domain)
 		if (err == nil) && (resp.StatusCode == 200) {
+			log.Info("I can reach myself at http://" + d.Domain)
 			return true
 		}
 
 		// Log this attempt:
 		if err != nil {
-			log.Info(err)
+			log.Warn(err)
 		} else {
 			log.Info("Unreachable! HTTP status code is " + strconv.Itoa(resp.StatusCode))
 		}
