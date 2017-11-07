@@ -72,7 +72,7 @@ func (d *Data) Reachable() bool {
 	for {
 
 		// Send an HTTP/GET request:
-		resp, err := netClient.Get("http://" + d.Domain)
+		resp, err := netClient.Get("http://" + d.Domain + "/.well-known/ping")
 		if (err == nil) && (resp.StatusCode == 200) {
 			log.Info("I can reach myself at http://" + d.Domain + "/.well-known/ping")
 			return true
