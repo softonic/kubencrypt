@@ -45,6 +45,7 @@ func main() {
 	// Init proxy data:
 	myProxy := &proxy.Data{
 		ServicePort: *cli.FlgServicePort,
+		Domain:      *cli.FlgDomain,
 	}
 
 	// Init ingress data:

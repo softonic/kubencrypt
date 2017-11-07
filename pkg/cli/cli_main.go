@@ -60,6 +60,11 @@ var (
 	FlgServicePort = App.Flag("service-port",
 		"Port of the k8s letsencrypt service.").
 		Required().Int()
+
+	// FlgDomain contains the domain name:
+	FlgDomain = App.Flag("domain",
+		"Prove control of this domain.").
+		Required().String()
 )
 
 //-----------------------------------------------------------------------------
